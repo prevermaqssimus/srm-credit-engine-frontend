@@ -1,0 +1,61 @@
+<div class="card">
+  <div
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px"
+  >
+    <h2 style="margin: 0">Recebíveis cadastrados</h2>
+    <button class="btn-secondary" (click)="reload()">Atualizar</button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (loading()) {
+    <p>Carregando...</p>
+  } @else if (receivables().length === 0) {
+    <p style="color: var(--color-text-muted)">Nenhum recebível cadastrado ainda.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Valor de face</th>
+          <th>Prazo</th>
+          <th>Moeda</th>
+          <th>Cedente</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of receivables(); track r.id) {
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ typeLabels[r.type] }}</td>
+            <td>{{ r.faceValue | number: '1.2-2' }}</td>
+            <td>{{ r.termMonths }} {{ r.termMonths === 1 ? 'mês' : 'meses' }}</td>
+            <td>{{ r.paymentCurrency }}</td>
+            <td>{{ r.cedente }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-pending]="r.status === statuses.PENDING"
+                [class.badge-settled]="r.status === statuses.SETTLED"
+              >
+                {{ statusLabels[r.status] }}
+              </span>
+            </td>
+            <td>
+              @if (r.status === statuses.PENDING) {
+                <button class="btn-secondary" (click)="selectForSettlement.emit(r)">
+                  Liquidar
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
