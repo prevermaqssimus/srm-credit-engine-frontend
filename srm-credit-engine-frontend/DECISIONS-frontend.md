@@ -26,3 +26,20 @@ Repositório separado também deixa mais claro, pra quem for avaliar, que são d
 Os primeiros commits deste repositório foram parar em `main` porque, até então, a branch padrão do GitHub ainda apontava para `main` — só depois eu corrigi essa configuração para `develop` (Settings → Branches → Default branch). Por isso, alguns commits iniciais aparecem em `main` quando deveriam ter ficado só em `develop`.
 
 Mantenho esses commits como estão, sem reescrever o histórico — isso já aconteceu e não muda mais. A partir de agora, com a branch padrão corrigida, isso não vai mais se repetir: nenhum commit novo vai direto pra `main`.
+
+
+## Passo 4 (listagem de recebíveis) trouxe junto peças de passos anteriores incompletos
+
+Ao implementar o componente de listagem (Passo 4), descobri que dependências que deveriam já existir de passos anteriores não estavam completas na branch: `src/environments/` não existia, e `receivable.service.ts` (que eu havia classificado como parte do Passo 3) nunca chegou a ser criado — só o interceptor e o utilitário de erro foram.
+
+**Decisão:** em vez de pausar o Passo 4 para reabrir e corrigir retroativamente o Passo 3 numa branch separada, completei as peças que faltavam (`environments/`, `receivable.service.ts`, os models de simulação) dentro do próprio commit do Passo 4, já que era exatamente este passo que precisava delas pela primeira vez.
+
+**Por quê:** um commit que não compila, só para respeitar rigorosamente "um passo por commit", não conta uma história melhor — conta uma história quebrada. A rastreabilidade que importa aqui é "cada commit deixa o projeto num estado funcional e testável", não "cada commit toca só nos arquivos daquele passo nominal". Prefiro um commit um pouco mais amplo, mas que roda de ponta a ponta, a vários commits menores em que nenhum deles sozinho compila.
+
+**O que eu faria diferente:** ter feito uma auditoria completa do scaffold (Passo 1) e dos services (Passo 3) antes de declará-los fechados, em vez de descobrir as lacunas só quando um passo posterior esbarrava nelas.
+
+## Standalone components, sem NgModule
+
+O projeto usa o modelo standalone do Angular (sem AppModule/NgModule) — cada componente declara direto no próprio imports o que ele usa, em vez de depender de um módulo central que junta tudo.
+
+Por quê: é o padrão recomendado pelo próprio Angular desde a versão 17, e o ng new já gera o projeto assim por padrão — não foi uma escolha contra a corrente, foi seguir o caminho atual do framework. Também deixa mais simples de entender: pra saber o que um componente usa, basta olhar o imports dele, sem precisar caçar em um AppModule separado que lista tudo do projeto inteiro.
