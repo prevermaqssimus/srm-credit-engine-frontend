@@ -1,6 +1,8 @@
 <div class="card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-    <h2 style="margin: 0;">Recebíveis cadastrados</h2>
+  <div
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px"
+  >
+    <h2 style="margin: 0">Recebíveis cadastrados</h2>
     <button class="btn-secondary" (click)="reload()">Atualizar</button>
   </div>
 
@@ -11,7 +13,7 @@
   @if (loading()) {
     <p>Carregando...</p>
   } @else if (receivables().length === 0) {
-    <p style="color: var(--color-text-muted);">Nenhum recebível cadastrado ainda.</p>
+    <p style="color: var(--color-text-muted)">Nenhum recebível cadastrado ainda.</p>
   } @else {
     <table>
       <thead>
@@ -46,7 +48,9 @@
             </td>
             <td>
               @if (r.status === statuses.PENDING) {
-                <button class="btn-secondary" (click)="selectForSettlement.emit(r)">Liquidar</button>
+                <button class="btn-secondary" (click)="selectForSettlement.emit(r)">
+                  Liquidar
+                </button>
               }
             </td>
           </tr>

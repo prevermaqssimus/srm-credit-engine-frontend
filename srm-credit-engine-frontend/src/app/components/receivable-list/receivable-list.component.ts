@@ -4,7 +4,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ReceivableService } from '../../services/receivable.service';
 import { extractApiErrorMessage } from '../../services/api-error.util';
 import { Receivable } from '../../models/receivable.model';
-import { RECEIVABLE_TYPE_LABELS, SETTLEMENT_STATUS_LABELS, SettlementStatus } from '../../models/enums';
+import {
+  RECEIVABLE_TYPE_LABELS,
+  SETTLEMENT_STATUS_LABELS,
+  SettlementStatus,
+} from '../../models/enums';
 
 /**
  * Lista os recebíveis cadastrados -- consome GET /api/receivables

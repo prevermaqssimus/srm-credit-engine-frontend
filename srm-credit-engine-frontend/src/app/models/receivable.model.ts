@@ -1,6 +1,5 @@
 import { Currency, SettlementStatus, ReceivableType } from './enums';
 
-
 /**
  * Espelha o retorno de GET /api/receivables e GET /api/receivables/{id}.
  * Campos e nomes conferidos contra a entidade Receivable do backend.
