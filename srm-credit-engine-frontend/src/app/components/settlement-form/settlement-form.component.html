@@ -1,0 +1,38 @@
+<div class="settlement-form">
+  <p>
+    <strong>Cedente:</strong> {{ receivable.cedente }}<br />
+    <strong>Valor de Face:</strong> {{ receivable.faceValue | number: '1.2-2' }}
+    {{ receivable.paymentCurrency }}<br />
+    <strong>Prazo:</strong> {{ receivable.termMonths }} meses
+  </p>
+
+  <label for="currency">Moeda de liquidação:</label>
+  <select
+    id="currency"
+    [ngModel]="selectedCurrency()"
+    (ngModelChange)="selectedCurrency.set($event)"
+    [disabled]="isSubmitting()"
+  >
+    @for (currency of currencies | keyvalue; track currency.key) {
+      <option [value]="currency.value">{{ currency.value }}</option>
+    }
+  </select>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <!--
+    disabled durante isSubmitting: previne duplo clique físico. A
+    idempotência de verdade vem do backend (mesma idempotencyKey em
+    qualquer reenvio), isso aqui é só a camada de UX que evita a
+    tentativa desnecessária, não a garantia em si.
+  -->
+  <button (click)="confirm()" [disabled]="isSubmitting()">
+    @if (isSubmitting()) {
+      Confirmando...
+    } @else {
+      Confirmar Liquidação
+    }
+  </button>
+</div>
