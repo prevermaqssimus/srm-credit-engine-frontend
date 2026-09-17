@@ -1,10 +1,51 @@
-<main>
-  <h1>SRM Credit Engine — Painel do Operador</h1>
+<main class="painel-operador">
+  <header>
+    <h1>SRM Credit Engine — Painel do Operador</h1>
+    <div class="header-actions">
+      <button (click)="toggleReceivablesPanel()">
+        @if (showReceivablesPanel()) {
+          Ocultar Recebíveis
+        } @else {
+          Ver Recebíveis
+        }
+      </button>
+      <button (click)="openCreateModal()">+ Novo Recebível</button>
+    </div>
+  </header>
+
+  <!-- Card de resumo da última liquidação concluída -->
+  @if (lastSettlement(); as settlement) {
+    <div class="last-settlement-card">
+      <strong>Liquidação #{{ settlement.id }} concluída.</strong>
+      Valor final: {{ settlement.finalAmount }} {{ settlement.settlementCurrency }}
+    </div>
+  }
 
   <!--
-    Integração provisória para validar o Passo 4 isoladamente.
-    A integração final (modais de cadastro/liquidação, orquestração
-    completa) acontece no Passo 8, conforme FRONTEND_FLOW.md.
+    Painel de recebíveis: visível/oculto via sinal independente dos
+    modais -- fechar este painel não fecha nenhum modal aberto.
   -->
-  <app-receivable-list />
+  @if (showReceivablesPanel()) {
+    <app-receivable-list (selectForSettlement)="onSelectForSettlement($event)" />
+  }
+
+  <!--
+    Grid de liquidações: SEMPRE visível, sem @if -- é o conteúdo
+    principal da tela (FRONTEND_FLOW.md, Seção 2).
+  -->
+  <app-settlement-list />
+
+  <!-- Modal de cadastro -->
+  @if (showCreateModal()) {
+    <app-modal title="Cadastrar Recebível" (closed)="closeCreateModal()">
+      <app-receivable-form (created)="onReceivableCreated()" />
+    </app-modal>
+  }
+
+  <!-- Modal de liquidação -->
+  @if (showSettleModal() && selectedForSettlement(); as receivable) {
+    <app-modal title="Liquidar Recebível" (closed)="closeSettleModal()">
+      <app-settlement-form [receivable]="receivable" (settled)="onSettled($event)" />
+    </app-modal>
+  }
 </main>
