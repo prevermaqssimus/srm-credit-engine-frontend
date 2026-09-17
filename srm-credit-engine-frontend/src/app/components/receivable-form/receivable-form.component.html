@@ -1,0 +1,100 @@
+<div class="card">
+  <h2>Cadastrar recebível</h2>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label for="type">Tipo do recebível</label>
+      <select id="type" formControlName="type">
+        @for (t of receivableTypes; track t) {
+          <option [value]="t">{{ typeLabels[t] }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="faceValue">Valor de face (R$)</label>
+      <input id="faceValue" type="number" step="0.01" formControlName="faceValue" />
+      @if (form.controls.faceValue.touched && form.controls.faceValue.invalid) {
+        <div class="error-text">Informe um valor positivo.</div>
+      }
+    </div>
+
+    <div class="field">
+      <label for="termMonths">Prazo (meses)</label>
+      <input id="termMonths" type="number" step="1" min="1" formControlName="termMonths" />
+      @if (form.controls.termMonths.touched && form.controls.termMonths.invalid) {
+        <div class="error-text">Prazo deve ser de ao menos 1 mês.</div>
+      }
+    </div>
+
+    <div class="field">
+      <label for="paymentCurrency">Moeda de pagamento</label>
+      <select id="paymentCurrency" formControlName="paymentCurrency">
+        <option [value]="currencies.BRL">BRL</option>
+        <option [value]="currencies.USD">USD</option>
+      </select>
+    </div>
+
+    <div class="simulation-preview">
+      @if (simulating()) {
+        <span class="simulation-loading">Calculando...</span>
+      } @else {
+        @if (simulationError()) {
+          <span class="simulation-error">Não foi possível simular: {{ simulationError() }}</span>
+        } @else {
+          @if (simulation(); as sim) {
+            <div class="simulation-result">
+              <span
+                >Valor presente (BRL):
+                <strong>{{ sim.presentValueBrl | number: '1.2-2' }}</strong></span
+              >
+              <span
+                >Deságio: <strong>{{ sim.discountBrl | number: '1.2-2' }}</strong></span
+              >
+              @if (sim.currency === currencies.USD) {
+                <span
+                  >Valor líquido (USD):
+                  <strong>{{ sim.finalAmount | number: '1.2-2' }}</strong> (câmbio:
+                  {{ sim.fxRateUsed | number: '1.4-4' }})</span
+                >
+              } @else {
+                <span
+                  >Valor líquido (BRL):
+                  <strong>{{ sim.finalAmount | number: '1.2-2' }}</strong></span
+                >
+              }
+            </div>
+          } @else {
+            <span class="simulation-hint">Preencha tipo, valor e prazo para ver a simulação.</span>
+          }
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="cedente">Cedente</label>
+      <input
+        id="cedente"
+        type="text"
+        formControlName="cedente"
+        placeholder="Nome da empresa cedente"
+      />
+    </div>
+
+    <div class="field">
+      <label for="sacado">Sacado</label>
+      <input id="sacado" type="text" formControlName="sacado" placeholder="Nome do devedor final" />
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Cadastrando...' : 'Cadastrar' }}
+    </button>
+  </form>
+</div>
