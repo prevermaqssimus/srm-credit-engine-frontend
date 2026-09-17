@@ -1,0 +1,83 @@
+<div class="card">
+  <h2>Extrato de Liquidações</h2>
+
+  <form [formGroup]="filterForm" class="filters">
+    <div class="filter-field">
+      <label for="cedente">Cedente</label>
+      <input id="cedente" type="text" formControlName="cedente" placeholder="Filtrar por cedente" />
+    </div>
+
+    <div class="filter-field">
+      <label for="currency">Moeda</label>
+      <select id="currency" formControlName="currency">
+        <option value="">Todas</option>
+        <option [value]="currencies.BRL">BRL</option>
+        <option [value]="currencies.USD">USD</option>
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="startDate">De</label>
+      <input id="startDate" type="date" formControlName="startDate" />
+    </div>
+
+    <div class="filter-field">
+      <label for="endDate">Até</label>
+      <input id="endDate" type="date" formControlName="endDate" />
+    </div>
+
+    <button type="button" class="btn-secondary" (click)="clearFilters()">Limpar filtros</button>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (loading()) {
+    <p class="loading-text">Carregando...</p>
+  } @else {
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <p class="empty-text">Nenhuma liquidação encontrada com os filtros atuais.</p>
+      } @else {
+        <table class="settlement-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cedente</th>
+              <th>Valor Final</th>
+              <th>Moeda</th>
+              <th>Câmbio</th>
+              <th>Liquidado em</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of p.content; track s.id) {
+              <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.cedente }}</td>
+                <td>{{ s.finalAmount | number: '1.2-2' }}</td>
+                <td>{{ s.settlementCurrency }}</td>
+                <td>{{ s.fxRateUsed ? (s.fxRateUsed | number: '1.4-4') : '—' }}</td>
+                <td>{{ s.settledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <button type="button" class="btn-secondary" [disabled]="p.first" (click)="previousPage()">
+            ← Anterior
+          </button>
+          <span class="pagination-info">
+            Página {{ p.number + 1 }} de {{ p.totalPages }} ({{ p.totalElements }} liquidações no
+            total)
+          </span>
+          <button type="button" class="btn-secondary" [disabled]="p.last" (click)="nextPage()">
+            Próxima →
+          </button>
+        </div>
+      }
+    }
+  }
+</div>
