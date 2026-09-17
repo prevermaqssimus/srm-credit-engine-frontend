@@ -1,140 +1,114 @@
-# SRM Credit Engine — Frontend
+# Passo a Passo — Rodar o Projeto Completo
 
-Painel do operador da plataforma de cessão de crédito multimoedas. Angular standalone, consumindo a API do backend (repositório separado: `srm-credit-engine`).
+## Portas usadas
+
+| Aplicação | Porta |
+|---|---|
+| Backend (Spring Boot) | **8080** |
+| Frontend (Angular) | **4200** |
+
+O **frontend só roda local** (`npm start`) — não é dockerizado (ver `DECISIONS-frontend.md`, seção "Frontend não dockerizado — rodar via npm mesmo"). O **backend pode rodar dos dois jeitos**: local (IntelliJ) ou via Docker. Escolha uma das duas opções abaixo para o backend.
 
 ---
 
-## Pré-requisitos — verifique antes de começar
+# BACKEND
 
-Abra um terminal (VS Code, IntelliJ, ou o terminal do seu sistema operacional) **dentro da pasta do projeto** (`srm-credit-engine-frontend`) e rode os comandos abaixo, um de cada vez.
+## Opção 1 — Rodar o backend local, pelo IntelliJ
 
-### 1. Node.js e npm
+1. Abra o projeto `srm-credit-engine` no IntelliJ.
+2. Espere o Maven terminar de importar as dependências (barra de progresso no rodapé da IDE).
+3. Localize a classe principal (`CreditEngineApplication.java`, a que tem `public static void main`).
+4. Clique no ícone de play (▶) ao lado da classe, ou botão direito → **Run**.
+5. Espere aparecer no console algo como `Started CreditEngineApplication` e a porta `8080`.
+
+**Confirme que subiu**, abrindo no navegador:
+```
+http://localhost:8080/actuator/health
+```
+Deve aparecer: `{"status":"UP"}`
+
+**Ou, alternativa mais completa:** abra o Swagger, que já mostra todos os endpoints disponíveis para testar direto pelo navegador:
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+## Opção 2 — Rodar o backend via Docker
+
+1. Abra o VS Code (ou terminal do sistema).
+2. Abra a pasta do backend: **File → Open Folder** → selecione `srm-credit-engine`.
+3. Abra o terminal integrado: **Ctrl+J** (ou **Terminal → New Terminal** no menu).
+4. Confirme que está na pasta certa (o terminal deve mostrar o caminho terminando em `srm-credit-engine`).
+5. Rode:
+
+```bash
+docker compose up --build
+```
+
+**Na primeira vez**, o Docker baixa as imagens (PostgreSQL, etc.) e constrói a imagem do backend do zero — pode levar alguns minutos, é normal. Da próxima vez, se não tiver mudado nada no código, `docker compose up` (sem `--build`) já basta e sobe mais rápido.
+
+6. Espere aparecer no log algo como `Started CreditEngineApplication`.
+
+**Confirme que subiu**, abrindo no navegador:
+```
+http://localhost:8080/actuator/health
+```
+Deve aparecer: `{"status":"UP"}`
+
+**Ou, alternativa mais completa:** abra o Swagger, que já mostra todos os endpoints disponíveis para testar direto pelo navegador:
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+# FRONTEND
+
+O frontend só roda local, do mesmo jeito independente de como você subiu o backend acima.
+
+## 1. Verificar ferramentas instaladas
+
+Abra um terminal (VS Code, WebStorm, ou terminal do sistema) e rode, um de cada vez:
 
 ```bash
 node -v
+```
+Precisa ser versão 20 ou superior. Se não reconhecer, baixe em: https://nodejs.org/ (versão LTS)
+
+```bash
 npm -v
 ```
-
-Precisa de **Node.js 20 ou superior**. Se o comando não for reconhecido, ou a versão vier menor que 20:
-
-📥 Baixe em: https://nodejs.org/ (instale a versão **LTS**)
-
-Depois de instalar, feche e abra o terminal de novo, e rode `node -v` outra vez para confirmar.
-
-### 2. Angular CLI
+Vem junto com o Node.
 
 ```bash
 ng version
 ```
-
-Se não for reconhecido:
-
+Se não reconhecer:
 ```bash
 npm install -g @angular/cli
 ```
 
-### 3. Docker (necessário para rodar o backend)
-
-```bash
-docker -v
-docker compose version
-```
-
-Se não estiver instalado:
-
-📥 Baixe em: https://www.docker.com/products/docker-desktop/
-
-Depois de instalar, abra o Docker Desktop e espere ele ficar com o ícone "rodando" (verde) antes de continuar.
-
----
-
-## Passo a passo para rodar tudo
-
-### 1. Instalar as dependências do frontend
+## 2. Instalar e subir
 
 Dentro da pasta `srm-credit-engine-frontend`:
 
 ```bash
 npm install
-```
-
-Isso pode levar alguns minutos na primeira vez. Se aparecer algum erro vermelho (não *warning* amarelo, que é normal), pare e resolva antes de continuar.
-
-### 2. Subir o backend
-
-Em outra pasta, `srm-credit-engine` (o repositório do backend):
-
-```bash
-docker compose up
-```
-
-Aguarde até aparecer no log algo como `Started SrmCreditEngineApplication` — isso confirma que a aplicação Spring Boot subiu dentro do container.
-
-**Confirme que o backend está de pé**, abrindo no navegador:
-```
-http://localhost:8080/actuator/health
-```
-Deve responder `{"status":"UP"}`. Se der erro de conexão, o backend ainda não subiu — espere mais um pouco ou revise o log do `docker compose up`.
-
-### 3. Subir o frontend
-
-De volta na pasta `srm-credit-engine-frontend`:
-
-```bash
 npm start
 ```
 
-Abre em `http://localhost:4200`.
-
-### 4. Confirmar que os dois estão se falando
-
-Com as duas aplicações no ar, abra `http://localhost:4200` no navegador e veja se a lista de recebíveis carrega (mesmo vazia, sem erro no console). Se aparecer erro de CORS ou "Failed to fetch" no console (F12), o backend não está acessível a partir do frontend — revise a porta em `src/environments/environment.ts`.
-
----
-
-## Resumo rápido (se já tiver tudo instalado)
-
-```bash
-# Terminal 1 — dentro de srm-credit-engine (backend)
-docker compose up
-
-# Terminal 2 — dentro de srm-credit-engine-frontend
-npm install
-npm start
+Abre sozinho em:
+```
+http://localhost:4200
 ```
 
 ---
 
-## Estrutura do projeto
+# Confirmar que os dois estão se falando
 
-```
-src/app/
-├── models/         → contratos de dados (espelham as entidades/DTOs do backend)
-├── services/        → comunicação HTTP com a API
-├── interceptors/     → tratamento centralizado de erro (ver DECISIONS.md)
-└── ...
-src/environments/
-└── environment.ts    → apiBaseUrl, único lugar que aponta pro backend
-```
+Com o backend rodando (Opção 1 ou 2 acima) **e** o frontend rodando (`npm start`), acesse `http://localhost:4200` no navegador.
 
----
+Se a tela carregar sem erro no console (F12 → aba Console), está tudo funcionando.
 
-## Status atual da implementação
-
-Este projeto está sendo construído em passos, cada um com uma entrega verificável antes do próximo (mesma lógica usada no backend). Ver `DECISIONS.md` para lacunas e cortes conhecidos.
-
-- [x] Passo 1 — Scaffold do projeto
-- [x] Passo 2 — Models
-- [ ] Passo 3 — Services + interceptor de erro (em andamento)
-- [ ] Passo 4 — Listagem de recebíveis
-- [ ] Passo 5 — Cadastro + simulação em tempo real
-- [ ] Passo 6 — Grid de liquidações (**bloqueado**, ver DECISIONS.md item 1)
-- [ ] Passo 7 — Modal de liquidação (idempotência + loading)
-- [ ] Passo 8 — Integração final
-- [ ] Passo 9 — Testes (Jasmine/Karma)
-
----
-
-## Backend
-
-Repositório separado: `srm-credit-engine`. Precisa estar rodando antes deste frontend, na porta configurada em `environment.ts`.
+Se aparecer erro de conexão ou CORS: confirme que o backend ainda está no ar, e que `src/environments/environment.ts` do frontend aponta para `http://localhost:8080`.

@@ -1,37 +1,58 @@
-# AI_USAGE.md — Frontend
+Eu utilizo as solicitações à IA de forma fragmentada. Usar scripts ou repositórios inteiros para consulta tende a gerar um resultado maior, porém com mais falhas. Prefiro pedir informações pontuais, derivadas de tarefas e entendimentos fragmentados — é mais fácil de absorver a informação assim.
 
-Aqui documento como usei IA (Claude) neste repositório. Não é o log inteiro da conversa — só os pontos que mostram como decidi, o que a IA errou e como eu peguei, e o que fiz questão de não delegar.
+Por exemplo, no escopo de atuação do frontend, pedi um passo a passo baseado no código já construído no backend, levando em consideração os pontos que deveríamos respeitar conforme o desafio técnico. Sigo esses passos para construir o sistema como um todo, mantendo rastreabilidade e sem perder o controle do que está sendo construído.
 
----
+Escopo que vou seguir para essa construção
 
-## 1. Specs/prompts estratégicos
+Plano Revisado — Frontend, 9 Passos
 
-### Exemplo: passo a passo de setup do README
+Passo 1 — Estrutura do projeto (scaffold)
 
-O que eu pedi, com a digitação corrigida (mantendo a mesma estrutura e ordem de ideias que escrevi originalmente):
+Sem alteração. Resultado esperado: npm install + npm start funcionando, tela em branco.
 
-> "Vamos iniciar pelo README necessário. Utilizar VS Code ou ferramenta similar, rodar dentro da pasta os comandos. Verificar, uma por uma, se as ferramentas necessárias já estão instaladas (rodando `npm -v` para o npm, e o mesmo para as demais) — se alguma não estiver instalada, colocar o link para baixar. Depois de confirmar tudo instalado, rodar `npm install`, `npm start`. Após isso, verificar se o Docker está configurado e se a aplicação do backend subiu corretamente na porta 8080, ou se o IntelliJ ou ferramenta similar está rodando o backend nessa mesma porta, para poder ter a experiência de teste completa."
+Passo 2 — Models (contratos de dados)
 
-O que eu queria com isso: um README que não assume que quem for rodar já tem tudo instalado — queria que checasse Node/npm, Angular CLI e Docker um por um, desse o link de download se não tivesse, e só depois desse a sequência de comandos pra subir backend e frontend juntos.
+Ajuste: adicionar api-error.model.ts já tipando os formatos de erro reais do backend (400, 404, 409, 422) — não um modelo genérico, mas refletindo a estrutura que o GlobalExceptionHandler do backend realmente devolve.
+Resultado esperado: tipos compilando, incluindo os 4 formatos de erro mapeados.
 
-A IA entendeu a intenção certa mesmo com a frase truncada, e gerou a seção "Pré-requisitos" do README com os comandos de verificação (`node -v`, `ng version`, `docker -v`) + links de download + o passo a passo completo terminando numa checagem de `/actuator/health` pra confirmar que os dois lados estão se falando.
+Passo 3 — Services + interceptor de erro (NOVO — estava faltando)
 
----
+O quê: receivable.service.ts, settlement.service.ts, error.interceptor.ts (novo).
+Por que juntar agora: um interceptor HTTP centralizado captura 409/422/404 antes de qualquer componente precisar tratar isso individualmente — decide aqui, não depois espalhado em cada formulário.
+Resultado esperado: services compilando + interceptor registrado no app.config.ts, testável isoladamente forçando um erro simulado.
 
-## 2. Um caso concreto em que a IA errou
+Passo 4 — Componente de listagem de recebíveis
 
-**O que aconteceu:** ao criar `api-error.model.ts` (Passo 2), a IA assumiu que o backend retornava erro no formato RFC 7807/`ProblemDetail` (padrão comum do Spring), com campos `title`, `detail`, `instance`. Eu disse pra ela não perder tempo adivinhando e mandei o `GlobalExceptionHandler.java` real.
+Sem alteração relevante. Resultado esperado: lista aparece (mesmo vazia).
 
-**Como percebi que tava errado:** o formato real do backend é bem mais simples — `timestamp`, `status`, `error`, `message`. Só descobri porque pedi pra IA olhar o código de verdade em vez de continuar assumindo.
+Passo 5 — Componente de cadastro + simulação em tempo real
 
-**Outro caso parecido, mais sério:** eu tinha registrado no `DECISIONS.md` que `GET /api/settlements` (listagem/extrato) não existia no backend — e baseado nisso, a IA ia me fazer pausar o desenvolvimento do frontend pra implementar esse endpoint. Só que eu tinha mandado uma versão desatualizada do código-fonte antes. Quando mandei os documentos atualizados (Postman collection, API_TESTING.md), ficou claro que o endpoint já existia, com filtro e paginação prontos. Se eu não tivesse resubido a versão certa, teria perdido tempo "resolvendo" um problema que não existia mais.
 
-**Como isso mudou meu processo:** parei de deixar a IA assumir formato de resposta de API sem eu mandar o código-fonte real primeiro — vale tanto pra erro (ApiError) quanto pra endpoint que eu achava que não existia.
+Ajuste: já incorpora explicitamente o que o FRONTEND_FLOW.md descreveu na Seção 3 — debounce de 300ms chamando /simulate dentro do próprio componente, isolado do pai.
+Resultado esperado: cadastro funciona E a prévia de simulação aparece a cada campo alterado, sem fechar nada.
 
----
+Passo 6 — Grid de liquidações com paginação + filtros (endpoint já confirmado no backend)
 
-## 3. O que decidi não delegar
+O quê: settlement-list.component.ts, com os 4 gatilhos descritos na Seção 8 do FRONTEND_FLOW.md (abertura, filtro com debounce 400ms, paginação, limpar filtros) — todos convergindo no método load() único.
+Atualização: GET /api/settlements já existe no backend, com filtro por cedente/currency/startDate/endDate e paginação (page/size) — confirmado via API_TESTING.md e coleção Postman. O passo deixou de ser incerto: agora é consumir o endpoint já pronto, não construir do zero.
+Por que como passo separado: é complexo o suficiente (4 gatilhos, sincronização filtro+página) para merecer seu próprio marco de verificação, antes de entrar no fluxo de liquidação.
+Resultado esperado: grid carrega sozinha ao abrir a tela; os 4 gatilhos testados manualmente, um por um.
 
-- **A decisão de qual mensagem de erro mostrar pro operador em cada status HTTP** — a IA sugeriu diferenciar as 3 causas de 409 por texto, mas fui eu que decidi que só valia a pena diferenciar "recebível já liquidado" (que é exceção minha, com texto estável) e deixar as outras duas genéricas, porque são exceção do próprio Spring e o texto pode mudar de versão. A IA implementou depois que eu decidi isso.
-- **Se rodava o frontend com Docker ou não** — a IA me mostrou os dois caminhos e o trabalho extra que o Docker no frontend daria (Dockerfile multi-stage, runtime config), mas a escolha de ficar só com `npm start` foi minha.
-- **Toda decisão registrada no `DECISIONS.md`** — a IA propõe o texto, mas a escolha em si (o quê cortar, o quê manter) é sempre minha antes de virar documento.
+Passo 7 — Modal de liquidação: idempotencyKey + loading state (ajustado)
+
+O quê: settlement-form.component.ts, com dois pontos que eu tinha sinalizado como pendentes, agora resolvidos aqui explicitamente:
+
+idempotencyKey gerada uma única vez, no momento em que o modal abre (ex.: crypto.randomUUID() no ngOnInit do form ou ao setar selectedForSettlement) — reaproveitada em qualquer retry dentro da mesma sessão do modal, nunca gerada de novo a cada clique.
+Botão "Confirmar" desabilitado enquanto a requisição está em voo (isSubmitting signal), prevenindo duplo clique físico.
+Resultado esperado: liquidar funciona; testar manualmente clicando "Confirmar" duas vezes rápido — deve gerar uma liquidação, não duas, e o botão deve ficar visualmente desabilitado no meio do processo.
+
+Passo 8 — Integração final: modais + AppComponent (era o Passo 7 original)
+
+O quê: toda a orquestração da Seção 4-6 do FRONTEND_FLOW.md — showCreateModal, showSettleModal, showReceivablesPanel, @ViewChild para recarregar a Grid.
+Decisão a registrar no DECISIONS.md: uso de @ViewChild em vez de Signal Store/NgRx — escolha consciente de simplicidade para o escopo do case, mesma lógica das trocas já documentadas no backend.
+Resultado esperado: fluxo completo — cadastrar → ver na lista → liquidar → resultado aparece → Grid principal recarrega sozinha.
+
+Passo 9 — Testes (Jasmine/Karma) — NOVO, fecha a lacuna já identificada
+
+O quê: ao menos os services (Passo 3) e o interceptor de erro testados com HttpClientTestingModule; um teste do debounce de simulação (Passo 5); um teste confirmando que dois cliques rápidos em "Confirmar" (Passo 7) não disparam duas chamadas HTTP.
+Por que não pular: sem isso, DECISIONS.md precisaria registrar "frontend sem testes automatizados" como corte consciente — o que é uma opção válida, mas pior do que simplesmente cobrir o mínimo crítico (idempotência client-side é exatamente o tipo de coisa que vale um teste automatizado, dado que já causou confusão real nos testes manuais do backend).
