@@ -1,0 +1,25 @@
+/* Bloco de prévia de simulação (valor líquido em tempo real). */
+.simulation-preview {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px dashed var(--color-border, #ccc);
+  border-radius: 6px;
+  min-height: 24px;
+  font-size: 0.9rem;
+}
+
+.simulation-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.simulation-hint,
+.simulation-loading {
+  color: var(--color-text-muted, #666);
+  font-style: italic;
+}
+
+.simulation-error {
+  color: var(--color-error, #b00020);
+}
