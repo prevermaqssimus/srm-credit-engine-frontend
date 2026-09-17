@@ -77,6 +77,6 @@ describe('ReceivableListComponent', () => {
     req.flush('erro', { status: 500, statusText: 'Internal Server Error' });
 
     expect(component.errorMessage()).toContain('HTTP 500');
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 });
