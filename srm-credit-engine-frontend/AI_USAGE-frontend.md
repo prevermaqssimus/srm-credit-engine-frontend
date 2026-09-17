@@ -17,7 +17,7 @@ Resultado esperado: tipos compilando, incluindo os 4 formatos de erro mapeados.
 
 Passo 3 — Services + interceptor de erro (NOVO — estava faltando)
 
-O quê: receivable.service.ts, settlement.service.ts, error.interceptor.ts (novo).
+O quê: receivable.service.ts, settlement.service.ts, error.interceptor.ts
 Por que juntar agora: um interceptor HTTP centralizado captura 409/422/404 antes de qualquer componente precisar tratar isso individualmente — decide aqui, não depois espalhado em cada formulário.
 Resultado esperado: services compilando + interceptor registrado no app.config.ts, testável isoladamente forçando um erro simulado.
 
