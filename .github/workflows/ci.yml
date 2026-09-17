@@ -1,0 +1,79 @@
+name: CI Frontend
+
+# Pipeline simples: "CI rodando testes e linter".
+#
+# ESTRUTURA DO REPOSITORIO: o projeto Angular (package.json, src/) fica
+# numa SUBPASTA (srm-credit-engine-frontend/), nao na raiz do repositorio
+# -- por isso "defaults.run.working-directory" abaixo, aplicado a todos
+# os steps que rodam npm/prettier.
+#
+# DECISAO: nao ha ESLint instalado (so Prettier, ja presente em
+# devDependencies via .prettierrc). O job "lint" usa "prettier --check"
+# em vez de adicionar uma ferramenta nova so para o CI.
+#
+# Testes rodam via Vitest (builder novo do Angular, @angular/build:unit-test)
+# -- headless por padrao, detecta sozinho a variavel CI=true que o GitHub
+# Actions ja define.
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+defaults:
+  run:
+    working-directory: srm-credit-engine-frontend
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: srm-credit-engine-frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Rodar testes (Vitest, headless por padrão em CI)
+        run: npm test
+
+      - name: Publicar artefatos de build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: srm-credit-engine-frontend/dist/
+          retention-days: 5
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: srm-credit-engine-frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Lint enxuto, sem ferramenta nova: verifica se o código está
+      # formatado conforme .prettierrc -- falha o job se não estiver.
+      - name: Verificar formatação (Prettier)
+        run: npx prettier --check "src/**/*.{ts,html,css}"
