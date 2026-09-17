@@ -43,3 +43,12 @@ Ao implementar o componente de listagem (Passo 4), descobri que dependências qu
 O projeto usa o modelo standalone do Angular (sem AppModule/NgModule) — cada componente declara direto no próprio imports o que ele usa, em vez de depender de um módulo central que junta tudo.
 
 Por quê: é o padrão recomendado pelo próprio Angular desde a versão 17, e o ng new já gera o projeto assim por padrão — não foi uma escolha contra a corrente, foi seguir o caminho atual do framework. Também deixa mais simples de entender: pra saber o que um componente usa, basta olhar o imports dele, sem precisar caçar em um AppModule separado que lista tudo do projeto inteiro.
+
+
+## Framework de testes é Vitest, não Jasmine/Karma
+
+O plano original (Passo 9) previa testes com Jasmine/Karma, seguindo o que era o padrão histórico do Angular CLI. O CI acusou erro (toBeFalse() não existe, sugestão de toBeFalsy()) que revelou que o projeto real usa Vitest como test runner — mudança que o próprio ng new já traz por padrão em versões recentes do Angular.
+
+Correção: trocado toBeFalse() (sintaxe Jasmine) por toBe(false) (Vitest) nos specs afetados. Toda menção futura a "Jasmine/Karma" no plano e nos passos deste projeto passa a ser Vitest.
+
+Por quê o engano aconteceu: o plano foi escrito a partir de conhecimento geral sobre Angular, sem confirmar contra o package.json real do projeto antes — o mesmo tipo de suposição sem verificação que já causou os erros anteriores (ApiError no formato errado, endpoint "inexistente"). Reforça a mesma lição: checar a configuração real do projeto antes de escrever código ou documentação em cima de uma suposição.

@@ -48,7 +48,7 @@ describe('ReceivableListComponent', () => {
     req.flush([mockReceivable]);
 
     expect(component.receivables()).toEqual([mockReceivable]);
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
   it('reload() deve recarregar a lista sob demanda', () => {
