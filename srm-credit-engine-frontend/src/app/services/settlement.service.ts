@@ -28,9 +28,7 @@ export class SettlementService {
    * Cada chamada de página/filtro novo dispara uma requisição nova.
    */
   extrato(filter: SettlementExtratoFilter): Observable<Page<Settlement>> {
-    let params = new HttpParams()
-      .set('page', filter.page ?? 0)
-      .set('size', filter.size ?? 10);
+    let params = new HttpParams().set('page', filter.page ?? 0).set('size', filter.size ?? 10);
 
     if (filter.cedente) {
       params = params.set('cedente', filter.cedente);
