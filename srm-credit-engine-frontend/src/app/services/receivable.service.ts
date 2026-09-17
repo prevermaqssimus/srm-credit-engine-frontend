@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { CreateReceivableRequest } from '../models/create-receivable-request.model';
 import { Receivable } from '../models/receivable.model';
 import { SimulateReceivableRequest } from '../models/simulate-receivable-request.model';
-import { SimulationResult } from '../models/create-receivable-request.model';
+import { SimulationResult } from '../models/simulation-result.model';
 
 /**
  * Consome com.srm.creditengine.controller.ReceivableController.
