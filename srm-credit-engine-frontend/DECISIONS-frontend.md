@@ -20,3 +20,9 @@ Optei por dois repositórios (srm-credit-engine pro backend, srm-credit-engine-f
 Por quê: stacks completamente diferentes (Java/Maven de um lado, Angular/npm do outro), cada um com seu próprio ciclo de build, dependências e versionamento. Misturar os dois no mesmo repositório significaria histórico de commit poluído (commit de frontend aparecendo junto com commit de backend sem relação nenhuma), .gitignore mais confuso (regras de Java e Node convivendo), e um PR de mudança só no frontend rodando CI do backend à toa (ou vice-versa), se não tiver cuidado extra de configurar CI condicional.
 
 Repositório separado também deixa mais claro, pra quem for avaliar, que são dois entregáveis distintos, cada um se sustentando sozinho — mas não impede dois repositórios quando faz sentido pela natureza do projeto.
+
+## Commits iniciais foram para main, não develop
+
+Os primeiros commits deste repositório foram parar em `main` porque, até então, a branch padrão do GitHub ainda apontava para `main` — só depois eu corrigi essa configuração para `develop` (Settings → Branches → Default branch). Por isso, alguns commits iniciais aparecem em `main` quando deveriam ter ficado só em `develop`.
+
+Mantenho esses commits como estão, sem reescrever o histórico — isso já aconteceu e não muda mais. A partir de agora, com a branch padrão corrigida, isso não vai mais se repetir: nenhum commit novo vai direto pra `main`.
