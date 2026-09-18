@@ -53,6 +53,13 @@ export class ReceivableFormComponent {
   simulating = signal(false);
   simulationError = signal<string | null>(null);
 
+  /**
+   * Valor formatado exibido no <input type="text"> de "Valor de face" --
+   * ver onFaceValueInput() abaixo. Nunca é lido pela validação/submit,
+   * só serve para exibição; o valor REAL fica em form.controls.faceValue.
+   */
+  displayFaceValue = signal('');
+
   form = this.fb.nonNullable.group({
     type: [ReceivableType.DUPLICATA_MERCANTIL, Validators.required],
     faceValue: [null as number | null, [Validators.required, Validators.min(0.01)]],
@@ -112,6 +119,39 @@ export class ReceivableFormComponent {
       });
   }
 
+  /**
+   * Máscara de moeda em tempo real, estilo caixa eletrônico/app
+   * bancário: remove tudo que não for dígito (torna impossível digitar
+   * "-", ".", "," ou letras) e trata os últimos 2 dígitos digitados como
+   * centavos -- "1" -> "0,01", "100" -> "1,00", "1000000" -> "10.000,00".
+   *
+   * Isso resolve, ao mesmo tempo, os três problemas apontados:
+   *   - sem setinhas de incremento (campo de texto não tem)
+   *   - sem número negativo possível (só dígitos chegam a virar valor)
+   *   - formatação automática com separador de milhar (.) e decimal (,)
+   */
+  onFaceValueInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '');
+
+    if (!digitsOnly) {
+      this.displayFaceValue.set('');
+      this.form.controls.faceValue.setValue(null);
+      return;
+    }
+
+    const numericValue = Number(digitsOnly) / 100;
+
+    this.displayFaceValue.set(
+      numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    );
+
+    // Atualiza o valor REAL do form control -- é isso que a validação,
+    // a simulação em tempo real (valueChanges acima) e o submit final
+    // usam. O input de texto na tela existe só para exibição formatada.
+    this.form.controls.faceValue.setValue(numericValue);
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -138,6 +178,7 @@ export class ReceivableFormComponent {
           this.loading.set(false);
           this.successMessage.set(`Recebível #${receivable.id} cadastrado com sucesso.`);
           this.simulation.set(null);
+          this.displayFaceValue.set(''); // limpa a máscara junto com o reset do form
           this.form.reset({
             type: ReceivableType.DUPLICATA_MERCANTIL,
             paymentCurrency: Currency.BRL,

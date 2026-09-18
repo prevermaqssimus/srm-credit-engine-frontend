@@ -2,22 +2,63 @@
   <header>
     <h1>SRM Credit Engine — Painel do Operador</h1>
     <div class="header-actions">
-      <button (click)="toggleReceivablesPanel()">
+      <button class="btn-secondary" (click)="toggleReceivablesPanel()">
         @if (showReceivablesPanel()) {
           Ocultar Recebíveis
         } @else {
           Ver Recebíveis
         }
       </button>
-      <button (click)="openCreateModal()">+ Novo Recebível</button>
+      <button class="btn-primary" (click)="openCreateModal()">+ Novo Recebível</button>
     </div>
   </header>
+
+  <!--
+    Card de confirmação do cadastro -- aparece FORA do modal (que já
+    fechou), fechado manualmente pelo operador. Ver app.ts,
+    onReceivableCreated(): mesmo padrão do card de liquidação abaixo.
+  -->
+  @if (lastCreatedReceivable(); as receivable) {
+    <div class="last-settlement-card">
+      <strong>Recebível #{{ receivable.id }} cadastrado com sucesso.</strong>
+      <table class="mini-grid">
+        <tbody>
+          <tr>
+            <th>Tipo</th>
+            <td>{{ typeLabels[receivable.type] }}</td>
+          </tr>
+          <tr>
+            <th>Cedente</th>
+            <td>{{ receivable.cedente }}</td>
+          </tr>
+          <tr>
+            <th>Sacado</th>
+            <td>{{ receivable.sacado }}</td>
+          </tr>
+          <tr>
+            <th>Valor de face</th>
+            <td>{{ receivable.faceValue | number: '1.2-2' }} {{ receivable.paymentCurrency }}</td>
+          </tr>
+          <tr>
+            <th>Prazo</th>
+            <td>{{ receivable.termMonths }} {{ receivable.termMonths === 1 ? 'mês' : 'meses' }}</td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td>{{ receivable.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-secondary" (click)="closeReceivableConfirmation()">Fechar</button>
+    </div>
+  }
 
   <!-- Card de resumo da última liquidação concluída -->
   @if (lastSettlement(); as settlement) {
     <div class="last-settlement-card">
       <strong>Liquidação #{{ settlement.id }} concluída.</strong>
       Valor final: {{ settlement.finalAmount }} {{ settlement.settlementCurrency }}
+      <button class="btn-secondary" (click)="closeSettlementSummary()">Fechar</button>
     </div>
   }
 
@@ -38,7 +79,7 @@
   <!-- Modal de cadastro -->
   @if (showCreateModal()) {
     <app-modal title="Cadastrar Recebível" (closed)="closeCreateModal()">
-      <app-receivable-form (created)="onReceivableCreated()" />
+      <app-receivable-form (created)="onReceivableCreated($event)" />
     </app-modal>
   }
 

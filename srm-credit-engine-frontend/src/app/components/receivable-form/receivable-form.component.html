@@ -20,7 +20,15 @@
 
     <div class="field">
       <label for="faceValue">Valor de face (R$)</label>
-      <input id="faceValue" type="number" step="0.01" formControlName="faceValue" />
+      <input
+        id="faceValue"
+        type="text"
+        inputmode="decimal"
+        [value]="displayFaceValue()"
+        (input)="onFaceValueInput($event)"
+        (blur)="form.controls.faceValue.markAsTouched()"
+        placeholder="0,00"
+      />
       @if (form.controls.faceValue.touched && form.controls.faceValue.invalid) {
         <div class="error-text">Informe um valor positivo.</div>
       }
