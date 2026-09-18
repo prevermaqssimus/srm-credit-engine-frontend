@@ -1,4 +1,5 @@
 import { Component, ViewChild, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { ModalComponent } from './components/modal/modal.component';
 import { ReceivableListComponent } from './components/receivable-list/receivable-list.component';
 import { ReceivableFormComponent } from './components/receivable-form/receivable-form.component';
@@ -6,6 +7,7 @@ import { SettlementListComponent } from './components/settlement-list/settlement
 import { SettlementFormComponent } from './components/settlement-form/settlement-form.component';
 import { Receivable } from './models/receivable.model';
 import { Settlement } from './models/settlement.model';
+import { RECEIVABLE_TYPE_LABELS } from './models/enums';
 
 /**
  * Orquestração final (Passo 8) -- ver FRONTEND_FLOW.md, Seções 4-6.
@@ -23,6 +25,7 @@ import { Settlement } from './models/settlement.model';
   selector: 'app-root',
   standalone: true,
   imports: [
+    DecimalPipe,
     ModalComponent,
     ReceivableListComponent,
     ReceivableFormComponent,
@@ -33,6 +36,11 @@ import { Settlement } from './models/settlement.model';
   templateUrl: './app.html',
 })
 export class App {
+  // Usado no card de confirmação de cadastro, para exibir o nome
+  // legível do tipo do recebível (ex: "Duplicata Mercantil") em vez do
+  // valor bruto do enum ("DUPLICATA_MERCANTIL").
+  readonly typeLabels = RECEIVABLE_TYPE_LABELS;
+
   // Referência direta ao componente da Grid, pra poder chamar .reload()
   // nele de fora (ver DECISIONS.md: escolha consciente de @ViewChild em
   // vez de Signal Store/NgRx, simplicidade suficiente pro escopo do case).
@@ -48,8 +56,24 @@ export class App {
   selectedForSettlement = signal<Receivable | null>(null);
 
   // Resumo da última liquidação concluída -- exibido num card de
-  // confirmação depois que o modal de liquidação fecha.
+  // confirmação depois que o modal de liquidação fecha. Fechado
+  // MANUALMENTE pelo operador (botão "Fechar resumo" no app.html), não
+  // por timeout -- dá tempo de ler sem pressa.
   lastSettlement = signal<Settlement | null>(null);
+
+  // Mesmo padrão do lastSettlement acima, aplicado ao cadastro: o
+  // recebível recém-criado, exibido num card de confirmação FORA do
+  // modal (que já fechou), com fechamento manual pelo operador.
+  //
+  // BUG CORRIGIDO: antes, onReceivableCreated() fechava o modal de forma
+  // síncrona, no mesmo instante em que a successMessage() era setada
+  // dentro do receivable-form -- o modal (e a mensagem junto) era
+  // destruído antes do operador conseguir ler. Em vez de mascarar isso
+  // com um setTimeout, a correção definitiva é espelhar o padrão que já
+  // funciona para liquidação: fecha o modal IMEDIATAMENTE, mas guarda o
+  // resultado num signal próprio, exibido num card FORA do modal, que só
+  // some quando o operador clicar em "Fechar".
+  lastCreatedReceivable = signal<Receivable | null>(null);
 
   // --- Fluxo 1: Cadastrar um recebível novo ---
 
@@ -62,12 +86,20 @@ export class App {
   }
 
   /**
-   * Chamado quando <app-receivable-form> emite (created). A simulação
-   * em tempo real que acontece DENTRO do form (debounce 300ms) nunca
-   * chega até aqui -- só o cadastro de fato concluído.
+   * Chamado quando <app-receivable-form> emite (created) -- agora recebe
+   * o Receivable criado (o EventEmitter já emitia isso; só não estava
+   * sendo capturado aqui antes). A simulação em tempo real que acontece
+   * DENTRO do form (debounce 300ms) nunca chega até aqui -- só o
+   * cadastro de fato concluído.
    */
-  onReceivableCreated(): void {
+  onReceivableCreated(receivable: Receivable): void {
+    this.lastCreatedReceivable.set(receivable);
     this.closeCreateModal();
+  }
+
+  /** Fecha o card de confirmação de cadastro -- ação manual do operador. */
+  closeReceivableConfirmation(): void {
+    this.lastCreatedReceivable.set(null);
   }
 
   // --- Fluxo 2: Ver e selecionar um recebível para liquidar ---
@@ -102,5 +134,10 @@ export class App {
     // muda de status (PENDING -> SETTLED), então tanto a Grid quanto o
     // painel de recebíveis (se aberto) precisam refletir isso.
     this.settlementList.reload();
+  }
+
+  /** Fecha o card de resumo de liquidação -- ação manual do operador. */
+  closeSettlementSummary(): void {
+    this.lastSettlement.set(null);
   }
 }
