@@ -1,0 +1,46 @@
+.painel-operador {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.painel-operador header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.last-settlement-card {
+  background: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mini-grid {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.mini-grid th {
+  text-align: left;
+  color: var(--color-text-muted, #666);
+  font-weight: 600;
+  padding: 4px 12px 4px 0;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.mini-grid td {
+  text-align: left;
+  padding: 4px 0;
+}

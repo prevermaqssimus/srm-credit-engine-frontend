@@ -1,0 +1,11 @@
+.receivable-summary {
+  background: var(--color-bg, #f4f6fb);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.settlement-form .btn-primary {
+  width: 100%;
+}

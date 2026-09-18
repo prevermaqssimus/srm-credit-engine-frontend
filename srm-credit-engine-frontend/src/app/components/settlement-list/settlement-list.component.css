@@ -1,0 +1,86 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin: 16px 0 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-field label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.filter-field input,
+.filter-field select {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 6px;
+}
+
+.btn-secondary {
+  background: var(--color-bg, #f5f5f5);
+  color: var(--color-primary, #1a1a1a);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-border, #e0e0e0);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.settlement-table th,
+.settlement-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.settlement-table th {
+  color: var(--color-text-muted, #666);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #666);
+}
+
+.loading-text,
+.empty-text {
+  color: var(--color-text-muted, #666);
+  font-style: italic;
+  padding: 20px 0;
+  text-align: center;
+}
